@@ -1,7 +1,7 @@
 package dummy
 
 import (
-	"log"
+	"sync"
 	"time"
 
 	"github.com/alfreddobradi/heymark/internal/database/model"
@@ -9,17 +9,21 @@ import (
 	"github.com/google/uuid"
 )
 
-func (db *DummyDB) Authenticate(username, password string) (model.Token, error) {
-	db.mx.Lock()
-	defer db.mx.Unlock()
+type userRepository struct {
+	mx      *sync.Mutex
+	records map[uuid.UUID]model.User
+}
 
-	for i := range db.Users {
-		user := db.Users[i]
+func (db *DummyDB) Authenticate(username, password string) (model.Token, error) {
+	db.Users.mx.Lock()
+	defer db.Users.mx.Unlock()
+
+	for i := range db.Users.records {
+		user := db.Users.records[i]
 		if user.Username == username && user.Password == helper.Sha256(password) {
 			token := model.NewToken()
 			user.Tokens = append(user.Tokens, token) // TODO Clean periodically
-			db.Users[i] = user
-			log.Printf("Tokens for %s: %+v", user.Username, user.Tokens)
+			db.Users.records[i] = user
 			return token, nil
 		}
 	}
@@ -28,10 +32,10 @@ func (db *DummyDB) Authenticate(username, password string) (model.Token, error) 
 }
 
 func (db *DummyDB) Authorize(auth model.AuthData) (model.User, error) {
-	db.mx.Lock()
-	defer db.mx.Unlock()
+	db.Users.mx.Lock()
+	defer db.Users.mx.Unlock()
 
-	for _, user := range db.Users {
+	for _, user := range db.Users.records {
 		if user.Username == auth.Username {
 			for _, t := range user.Tokens {
 				if t.ID == auth.TokenID && t.ValidUntil.After(time.Now()) {
@@ -45,10 +49,10 @@ func (db *DummyDB) Authorize(auth model.AuthData) (model.User, error) {
 }
 
 func (db *DummyDB) GetUser(id uuid.UUID) (model.User, error) {
-	db.mx.Lock()
-	defer db.mx.Unlock()
+	db.Users.mx.Lock()
+	defer db.Users.mx.Unlock()
 
-	if user, ok := db.Users[id]; ok {
+	if user, ok := db.Users.records[id]; ok {
 		return user, nil
 	}
 
@@ -56,10 +60,10 @@ func (db *DummyDB) GetUser(id uuid.UUID) (model.User, error) {
 }
 
 func (db *DummyDB) CreateUser(username, password string) (model.User, error) {
-	db.mx.Lock()
-	defer db.mx.Unlock()
+	db.Users.mx.Lock()
+	defer db.Users.mx.Unlock()
 
-	for _, user := range db.Users {
+	for _, user := range db.Users.records {
 		if user.Username == username {
 			return model.User{}, model.ErrUsernameExists
 		}
@@ -74,7 +78,7 @@ func (db *DummyDB) CreateUser(username, password string) (model.User, error) {
 		Password: passHash,
 	}
 
-	db.Users[id] = user
+	db.Users.records[id] = user
 
 	return user, nil
 }
