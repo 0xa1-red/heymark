@@ -53,6 +53,9 @@ type AuthData struct {
 }
 
 func GetAuthDataFromHeader(header string) (AuthData, error) {
+	if header == "" {
+		return AuthData{}, nil
+	}
 	encoded := strings.TrimPrefix(header, "Bearer ")
 	raw, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {

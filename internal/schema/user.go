@@ -10,6 +10,39 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+var UserType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "User",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.ID,
+		},
+		"username": &graphql.Field{
+			Type: graphql.String,
+		},
+		"email": &graphql.Field{
+			Type: graphql.String,
+		},
+		"password": &graphql.Field{
+			Type: graphql.String,
+		},
+		"created_at": &graphql.Field{
+			Type: graphql.DateTime,
+		},
+		"updated_at": &graphql.Field{
+			Type: graphql.DateTime,
+		},
+	},
+})
+
+var TokenType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Token",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.ID,
+		},
+	},
+})
+
 var userQueryFields = graphql.Fields{
 	"user": &graphql.Field{
 		Name:        "User",
