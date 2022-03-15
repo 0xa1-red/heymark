@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -61,7 +60,7 @@ func GetAuthDataFromHeader(header string) (AuthData, error) {
 	if err != nil {
 		return AuthData{}, fmt.Errorf("Error decoding base64 string: %w", err)
 	}
-	log.Println(string(raw))
+
 	decoder := json.NewDecoder(bytes.NewBuffer(raw))
 	var a AuthData
 	if err := decoder.Decode(&a); err != nil {

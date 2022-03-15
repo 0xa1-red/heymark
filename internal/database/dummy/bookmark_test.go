@@ -28,7 +28,7 @@ var users = []model.User{
 var bookmarks = []model.Bookmark{
 	{
 		ID:          uuid.MustParse("10854e1b-53d7-4d85-aa43-13bde0601729"),
-		OwnerID:     users[0].ID,
+		Owner:       users[1],
 		URL:         "https://twitch.tv/barveyhirdman",
 		Description: "My Twitch channel",
 		Visibility:  model.VisibilityPublic,
@@ -36,7 +36,7 @@ var bookmarks = []model.Bookmark{
 	},
 	{
 		ID:          uuid.MustParse("49e76620-a86e-47a6-81d5-32cd9f7f8866"),
-		OwnerID:     users[0].ID,
+		Owner:       users[1],
 		URL:         "https://twitter.com/barveyhirdman",
 		Description: "My Twitter account",
 		Visibility:  model.VisibilityPrivate,
@@ -44,7 +44,6 @@ var bookmarks = []model.Bookmark{
 	},
 	{
 		ID:          uuid.MustParse("914d44cc-d9fa-40ca-9d21-e90f705f45a8"),
-		OwnerID:     users[1].ID,
 		URL:         "https://google.com",
 		Description: "Evil Search Engine",
 		Visibility:  model.VisibilityPrivate,
@@ -52,7 +51,7 @@ var bookmarks = []model.Bookmark{
 	},
 	{
 		ID:          uuid.MustParse("914d44cc-d9fa-40ca-9d21-e90f705f45a9"),
-		OwnerID:     users[1].ID,
+		Owner:       users[1],
 		URL:         "https://twitch.tv/rixraw",
 		Description: "Good Twitch channel",
 		Visibility:  model.VisibilityPublic,

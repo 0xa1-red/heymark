@@ -51,6 +51,7 @@ func init() {
 	registerFields(userQueryFields, FieldQuery)
 	registerFields(userMutationFields, FieldMutation)
 	registerFields(bookmarkQueryFields, FieldQuery)
+	registerFields(bookmarkMutationFields, FieldMutation)
 
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name:   "RootQuery",

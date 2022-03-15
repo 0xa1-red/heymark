@@ -26,23 +26,9 @@ func (db *DummyDB) Timeline(id uuid.UUID) ([]model.Bookmark, error) {
 	defer db.Bookmarks.mx.Unlock()
 	defer db.Users.mx.Unlock()
 
-	userCache := map[uuid.UUID]model.User{}
-
 	res := []model.Bookmark{}
 	for _, bookmark := range db.Bookmarks.Records {
-		if bookmark.OwnerID == id || bookmark.Visibility == model.VisibilityPublic {
-			var user model.User
-			var cacheHit bool
-			user, cacheHit = userCache[bookmark.OwnerID]
-			if !cacheHit {
-				var ok bool
-				user, ok = db.Users.Records[bookmark.OwnerID]
-				if !ok {
-					return nil, fmt.Errorf("User with ID %s not found", bookmark.OwnerID)
-				}
-				userCache[bookmark.OwnerID] = user
-			}
-			bookmark.Owner = user
+		if bookmark.Owner.ID.String() == id.String() || bookmark.Visibility == model.VisibilityPublic {
 			res = append(res, bookmark)
 		}
 	}
@@ -56,4 +42,19 @@ func (db *DummyDB) Get(id uuid.UUID) (model.Bookmark, error) {
 
 func (db *DummyDB) Jump(id uuid.UUID) error {
 	return fmt.Errorf("not implemented")
+}
+
+func (db *DummyDB) CreateBookmark(owner model.User, bookmark model.Bookmark) (model.Bookmark, error) {
+	db.Bookmarks.mx.Lock()
+	defer db.Bookmarks.mx.Unlock()
+
+	for _, existing := range db.Bookmarks.Records {
+		if existing.URL == bookmark.URL && existing.Owner.ID == owner.ID {
+			return model.Bookmark{}, fmt.Errorf("The URL is already bookmarked: %s", existing.URL)
+		}
+	}
+
+	db.Bookmarks.Records[bookmark.ID] = bookmark
+
+	return bookmark, nil
 }

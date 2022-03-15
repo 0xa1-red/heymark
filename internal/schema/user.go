@@ -130,7 +130,7 @@ var userQueryFields = graphql.Fields{
 }
 
 var userMutationFields = graphql.Fields{
-	"create": &graphql.Field{
+	"user": &graphql.Field{
 		Name:        "Create",
 		Type:        UserType,
 		Description: "Create a new user",
