@@ -1,8 +1,13 @@
 package schema
 
 import (
+	"context"
 	"log"
 
+	int_context "github.com/alfreddobradi/heymark/internal/context"
+	"github.com/alfreddobradi/heymark/internal/database"
+	"github.com/alfreddobradi/heymark/internal/database/model"
+	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 )
 
@@ -69,4 +74,13 @@ func init() {
 		Query:    rootQuery,
 		Mutation: rootMutation,
 	})
+}
+
+func authorize(ctx context.Context, db database.Database) (model.User, error) {
+	authData, err := int_context.GetAuthData(ctx)
+	if err != nil {
+		return model.User{ID: uuid.Nil}, err
+	}
+
+	return db.Authorize(authData)
 }

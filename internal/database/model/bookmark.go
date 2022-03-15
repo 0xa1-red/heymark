@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"time"
@@ -42,8 +43,8 @@ const (
 )
 
 type BookmarkRepository interface {
-	Timeline(id uuid.UUID) ([]Bookmark, error)
-	Get(id uuid.UUID) (Bookmark, error)
+	Timeline(ctx context.Context) ([]Bookmark, error)
+	GetBookmark(ctx context.Context, id uuid.UUID) (Bookmark, error)
 	Jump(id uuid.UUID) error
 	CreateBookmark(owner User, bookmark Bookmark) (Bookmark, error)
 }

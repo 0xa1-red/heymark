@@ -38,10 +38,7 @@ func (db *DummyDB) Authenticate(username, password string) (model.Token, error) 
 	return model.Token{}, model.ErrUserNotFound
 }
 
-func (db *DummyDB) Authorize(auth model.AuthData) (model.User, error) {
-	db.Users.mx.Lock()
-	defer db.Users.mx.Unlock()
-
+func (db *DummyDB) authorize(auth model.AuthData) (model.User, error) {
 	for _, user := range db.Users.Records {
 		if user.Username == auth.Username {
 			for _, t := range user.Tokens {
@@ -52,7 +49,14 @@ func (db *DummyDB) Authorize(auth model.AuthData) (model.User, error) {
 		}
 	}
 
-	return model.User{}, model.ErrUnauthorized
+	return model.User{ID: uuid.Nil}, model.ErrUnauthorized
+}
+
+func (db *DummyDB) Authorize(auth model.AuthData) (model.User, error) {
+	db.Users.mx.Lock()
+	defer db.Users.mx.Unlock()
+
+	return db.authorize(auth)
 }
 
 func (db *DummyDB) GetUser(id uuid.UUID) (model.User, error) {

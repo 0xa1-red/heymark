@@ -40,6 +40,35 @@ var BookmarkType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 var bookmarkQueryFields = graphql.Fields{
+	"bookmark": &graphql.Field{
+		Type:        BookmarkType,
+		Description: "Return a single bookmark",
+		Args: graphql.FieldConfigArgument{
+			"id": &graphql.ArgumentConfig{
+				Type:        graphql.String,
+				Description: "The ID of the bookmark",
+			},
+		},
+		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+			id, ok := params.Args["id"].(string)
+			if !ok {
+				return nil, fmt.Errorf("Failed to unmarshal ID")
+			}
+
+			bid, err := uuid.Parse(id)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to parse bookmark ID: %w", err)
+			}
+
+			db := database.GetDB()
+			bookmark, err := db.GetBookmark(params.Context, bid)
+			if err != nil {
+				return nil, err
+			}
+
+			return bookmark, nil
+		},
+	},
 	"timeline": &graphql.Field{
 		Type:        graphql.NewList(BookmarkType),
 		Description: "Return a timeline of bookmarks",
@@ -47,24 +76,9 @@ var bookmarkQueryFields = graphql.Fields{
 			// TODO filters and sorting
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-			authHeader := params.Context.Value(ContextAuth("Authorization"))
-
-			header, _ := authHeader.(string)
-			authData, err := model.GetAuthDataFromHeader(header)
-			if err != nil {
-				return nil, fmt.Errorf("Error parsing authorization data: %w", err)
-			}
-
 			db := database.GetDB()
-			id := uuid.Nil
-			if authData.Username != "" {
-				user, err := db.Authorize(authData)
-				if err != nil {
-					return nil, model.ErrUnauthorized
-				}
-				id = user.ID
-			}
-			timeline, err := db.Timeline(id)
+
+			timeline, err := db.Timeline(params.Context)
 			if err != nil {
 				return nil, fmt.Errorf("Error retrieving timeline: %w", err)
 			}
@@ -88,27 +102,12 @@ var bookmarkMutationFields = graphql.Fields{
 			},
 			"visibility": &graphql.ArgumentConfig{
 				Type:        graphql.String,
-				Description: "Visibility (public|private)",
+				Description: "Visibility (public or private)",
 			},
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-			authHeader := params.Context.Value(ContextAuth("Authorization"))
-			if authHeader == nil {
-				return nil, model.ErrUnauthorized
-			}
-
-			header, ok := authHeader.(string)
-			if !ok {
-				return nil, model.ErrUnauthorized
-			}
-
-			authData, err := model.GetAuthDataFromHeader(header)
-			if err != nil {
-				return nil, fmt.Errorf("Error parsing authorization data: %w", err)
-			}
-
 			db := database.GetDB()
-			user, err := db.Authorize(authData)
+			user, err := authorize(params.Context, db)
 			if err != nil {
 				return nil, model.ErrUnauthorized
 			}

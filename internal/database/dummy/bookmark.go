@@ -1,10 +1,13 @@
 package dummy
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
+	_context "github.com/alfreddobradi/heymark/internal/context"
 	"github.com/alfreddobradi/heymark/internal/database/model"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/google/uuid"
 )
 
@@ -20,11 +23,24 @@ func NewBookmarkRepository() BookmarkRepository {
 	}
 }
 
-func (db *DummyDB) Timeline(id uuid.UUID) ([]model.Bookmark, error) {
+func (db *DummyDB) Timeline(ctx context.Context) ([]model.Bookmark, error) {
 	db.Bookmarks.mx.Lock()
-	db.Users.mx.Lock()
 	defer db.Bookmarks.mx.Unlock()
-	defer db.Users.mx.Unlock()
+
+	id := uuid.Nil
+	authData, err := _context.GetAuthData(ctx)
+	if err != nil && err.Error() != _context.ErrNoAuthorization.Error() {
+		return nil, err
+	} else if err == nil {
+		user, err := db.Authorize(authData)
+		if err != nil {
+			return nil, err
+		}
+
+		id = user.ID
+	}
+
+	spew.Dump(id)
 
 	res := []model.Bookmark{}
 	for _, bookmark := range db.Bookmarks.Records {
@@ -36,8 +52,33 @@ func (db *DummyDB) Timeline(id uuid.UUID) ([]model.Bookmark, error) {
 	return res, nil
 }
 
-func (db *DummyDB) Get(id uuid.UUID) (model.Bookmark, error) {
-	return model.Bookmark{}, fmt.Errorf("not implemented")
+func (db *DummyDB) GetBookmark(ctx context.Context, id uuid.UUID) (model.Bookmark, error) {
+	db.Bookmarks.mx.Lock()
+	defer db.Bookmarks.mx.Unlock()
+
+	userID := uuid.Nil
+	authData, err := _context.GetAuthData(ctx)
+	if err != nil && err.Error() != _context.ErrNoAuthorization.Error() {
+		return model.Bookmark{}, err
+	} else if err == nil {
+		user, err := db.authorize(authData)
+		if err != nil {
+			return model.Bookmark{}, err
+		}
+
+		userID = user.ID
+	}
+
+	bookmark, ok := db.Bookmarks.Records[id]
+	if !ok {
+		return model.Bookmark{}, fmt.Errorf("Bookmark not found")
+	}
+
+	if userID.String() == uuid.Nil.String() && bookmark.Visibility != model.VisibilityPublic {
+		return model.Bookmark{}, model.ErrUnauthorized
+	}
+
+	return bookmark, nil
 }
 
 func (db *DummyDB) Jump(id uuid.UUID) error {
