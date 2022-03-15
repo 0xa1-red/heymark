@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	int_context "github.com/alfreddobradi/heymark/internal/context"
 	"github.com/alfreddobradi/heymark/internal/schema"
 	"github.com/graphql-go/graphql"
 )
@@ -23,7 +24,7 @@ func Execute(r *http.Request) ([]byte, error) {
 	if query, ok := params["query"]; ok {
 		ctx := r.Context()
 		if auth := r.Header.Get("Authorization"); auth != "" {
-			ctx = context.WithValue(ctx, schema.ContextAuth("Authorization"), auth)
+			ctx = context.WithValue(ctx, int_context.Auth("Authorization"), auth)
 		}
 
 		result := graphql.Do(graphql.Params{

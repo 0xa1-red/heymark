@@ -1,8 +1,13 @@
 package schema
 
 import (
+	"context"
 	"log"
 
+	int_context "github.com/alfreddobradi/heymark/internal/context"
+	"github.com/alfreddobradi/heymark/internal/database"
+	"github.com/alfreddobradi/heymark/internal/database/model"
+	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 )
 
@@ -51,19 +56,31 @@ func init() {
 	registerFields(userQueryFields, FieldQuery)
 	registerFields(userMutationFields, FieldMutation)
 	registerFields(bookmarkQueryFields, FieldQuery)
+	registerFields(bookmarkMutationFields, FieldMutation)
 
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
-		Name:   "RootQuery",
-		Fields: queryFields,
+		Name:        "Query",
+		Description: "Operations to read data",
+		Fields:      queryFields,
 	})
 
 	rootMutation := graphql.NewObject(graphql.ObjectConfig{
-		Name:   "RootMutation",
-		Fields: mutationFields,
+		Name:        "Mutation",
+		Description: "Operations to change data",
+		Fields:      mutationFields,
 	})
 
 	RootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{
 		Query:    rootQuery,
 		Mutation: rootMutation,
 	})
+}
+
+func authorize(ctx context.Context, db database.Database) (model.User, error) {
+	authData, err := int_context.GetAuthData(ctx)
+	if err != nil {
+		return model.User{ID: uuid.Nil}, err
+	}
+
+	return db.Authorize(authData)
 }

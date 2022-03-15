@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -22,7 +21,7 @@ type UserRepository interface {
 	Authenticate(username, password string) (Token, error)
 	Authorize(auth AuthData) (User, error)
 	GetUser(id uuid.UUID) (User, error)
-	CreateUser(username, password string) (User, error)
+	CreateUser(username, password, bio string) (User, error)
 }
 
 type Token struct {
@@ -53,12 +52,15 @@ type AuthData struct {
 }
 
 func GetAuthDataFromHeader(header string) (AuthData, error) {
+	if header == "" {
+		return AuthData{}, nil
+	}
 	encoded := strings.TrimPrefix(header, "Bearer ")
 	raw, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {
 		return AuthData{}, fmt.Errorf("Error decoding base64 string: %w", err)
 	}
-	log.Println(string(raw))
+
 	decoder := json.NewDecoder(bytes.NewBuffer(raw))
 	var a AuthData
 	if err := decoder.Decode(&a); err != nil {
