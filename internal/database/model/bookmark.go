@@ -45,7 +45,6 @@ const (
 type BookmarkRepository interface {
 	Timeline(ctx context.Context) ([]Bookmark, error)
 	GetBookmark(ctx context.Context, id uuid.UUID) (Bookmark, error)
-	Jump(id uuid.UUID) error
 	CreateBookmark(owner User, bookmark Bookmark) (Bookmark, error)
 }
 

@@ -81,10 +81,6 @@ func (db *DummyDB) GetBookmark(ctx context.Context, id uuid.UUID) (model.Bookmar
 	return bookmark, nil
 }
 
-func (db *DummyDB) Jump(id uuid.UUID) error {
-	return fmt.Errorf("not implemented")
-}
-
 func (db *DummyDB) CreateBookmark(owner model.User, bookmark model.Bookmark) (model.Bookmark, error) {
 	db.Bookmarks.mx.Lock()
 	defer db.Bookmarks.mx.Unlock()
