@@ -14,22 +14,28 @@ var UserType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "User",
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
-			Type: graphql.ID,
+			Type:        graphql.ID,
+			Description: "User ID (UUID)",
 		},
 		"username": &graphql.Field{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "The user's publicly visible name",
 		},
 		"email": &graphql.Field{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "The user's email address",
 		},
 		"password": &graphql.Field{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "The password the user picked",
 		},
 		"created_at": &graphql.Field{
-			Type: graphql.DateTime,
+			Type:        graphql.DateTime,
+			Description: "The timestamp the user was created at",
 		},
 		"updated_at": &graphql.Field{
-			Type: graphql.DateTime,
+			Type:        graphql.DateTime,
+			Description: "The timestamp the user was updated at",
 		},
 	},
 })
@@ -38,7 +44,8 @@ var TokenType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Token",
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
-			Type: graphql.ID,
+			Type:        graphql.ID,
+			Description: "Token ID (UUID)",
 		},
 	},
 })
@@ -50,7 +57,8 @@ var userQueryFields = graphql.Fields{
 		Description: "Return user details",
 		Args: graphql.FieldConfigArgument{
 			"id": &graphql.ArgumentConfig{
-				Type: graphql.String,
+				Type:        graphql.String,
+				Description: "ID of the user to retrieve",
 			},
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -77,10 +85,12 @@ var userQueryFields = graphql.Fields{
 		Description: "Exchange login details to a bearer token",
 		Args: graphql.FieldConfigArgument{
 			"username": &graphql.ArgumentConfig{
-				Type: graphql.String,
+				Type:        graphql.String,
+				Description: "Username to authenticate with",
 			},
 			"password": &graphql.ArgumentConfig{
-				Type: graphql.String,
+				Type:        graphql.String,
+				Description: "Password to authenticate with",
 			},
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -131,17 +141,21 @@ var userQueryFields = graphql.Fields{
 
 var userMutationFields = graphql.Fields{
 	"user": &graphql.Field{
-		Name:        "Create",
+		Name:        "User",
 		Type:        UserType,
 		Description: "Create a new user",
 		Args: graphql.FieldConfigArgument{
 			"username": &graphql.ArgumentConfig{
 				Type:        graphql.String,
-				Description: "Username",
+				Description: "Username to sign up with",
 			},
 			"password": &graphql.ArgumentConfig{
 				Type:        graphql.String,
-				Description: "Password",
+				Description: "Password to sign up with",
+			},
+			"bio": &graphql.ArgumentConfig{
+				Type:        graphql.String,
+				Description: "A short description of the user",
 			},
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
@@ -153,9 +167,13 @@ var userMutationFields = graphql.Fields{
 			if !ok {
 				return nil, fmt.Errorf("Failed to unmarshal password")
 			}
+			bio, ok := params.Args["bio"].(string)
+			if !ok {
+				return nil, fmt.Errorf("Failed to unmarshal bio")
+			}
 
 			db := database.GetDB()
-			user, err := db.CreateUser(username, password)
+			user, err := db.CreateUser(username, password, bio)
 			if err != nil {
 				return nil, fmt.Errorf("Failed to create user: %w", err)
 			}

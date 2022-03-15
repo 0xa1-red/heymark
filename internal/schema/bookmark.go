@@ -13,30 +13,37 @@ var BookmarkType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Bookmark",
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "Bookmark ID (UUID)",
 		},
 		"url": &graphql.Field{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "Bookmark URL",
 		},
 		"description": &graphql.Field{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "A short description of the bookmark",
 		},
 		"owner": &graphql.Field{
-			Type: UserType,
+			Type:        UserType,
+			Description: "Details of the user who created the bookmark",
 		},
 		"visibility": &graphql.Field{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "Visibility of the bookmark (public, private or group)",
 		},
 		"created_at": &graphql.Field{
-			Type: graphql.DateTime,
+			Type:        graphql.DateTime,
+			Description: "The timestamp the bookmark was created at",
 		},
 	},
 })
 
 var bookmarkQueryFields = graphql.Fields{
 	"timeline": &graphql.Field{
-		Type: graphql.NewList(BookmarkType),
-		Args: graphql.FieldConfigArgument{
+		Type:        graphql.NewList(BookmarkType),
+		Description: "Return a timeline of bookmarks",
+		Args:        graphql.FieldConfigArgument{
 			// TODO filters and sorting
 		},
 		Resolve: func(params graphql.ResolveParams) (interface{}, error) {

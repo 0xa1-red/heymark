@@ -54,13 +54,15 @@ func init() {
 	registerFields(bookmarkMutationFields, FieldMutation)
 
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
-		Name:   "RootQuery",
-		Fields: queryFields,
+		Name:        "Query",
+		Description: "Operations to read data",
+		Fields:      queryFields,
 	})
 
 	rootMutation := graphql.NewObject(graphql.ObjectConfig{
-		Name:   "RootMutation",
-		Fields: mutationFields,
+		Name:        "Mutation",
+		Description: "Operations to change data",
+		Fields:      mutationFields,
 	})
 
 	RootSchema, _ = graphql.NewSchema(graphql.SchemaConfig{

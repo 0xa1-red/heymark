@@ -21,7 +21,7 @@ type UserRepository interface {
 	Authenticate(username, password string) (Token, error)
 	Authorize(auth AuthData) (User, error)
 	GetUser(id uuid.UUID) (User, error)
-	CreateUser(username, password string) (User, error)
+	CreateUser(username, password, bio string) (User, error)
 }
 
 type Token struct {

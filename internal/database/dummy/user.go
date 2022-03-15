@@ -66,7 +66,7 @@ func (db *DummyDB) GetUser(id uuid.UUID) (model.User, error) {
 	return model.User{}, model.ErrUserNotFound
 }
 
-func (db *DummyDB) CreateUser(username, password string) (model.User, error) {
+func (db *DummyDB) CreateUser(username, password, bio string) (model.User, error) {
 	db.Users.mx.Lock()
 	defer db.Users.mx.Unlock()
 
@@ -83,6 +83,7 @@ func (db *DummyDB) CreateUser(username, password string) (model.User, error) {
 		ID:       id,
 		Username: username,
 		Password: passHash,
+		Bio:      bio,
 	}
 
 	db.Users.Records[id] = user
